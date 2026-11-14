@@ -28,7 +28,12 @@ export function createMastraStorage() {
   }
 
   // Local-only fallback. Never use ephemeral in-memory SQLite in production.
-  const dir = join(process.cwd(), ".mastra");
+  // Vercel Preview has no production DB credentials, and its app code is read-only.
+  // Only its /tmp directory can hold throwaway scratch files. It must not be
+  // used for production or for testing durable conversation history.
+  const dir = process.env.VERCEL
+    ? join("/tmp", "amoaica-mastra-preview")
+    : join(process.cwd(), ".mastra");
   mkdirSync(dir, { recursive: true });
   return new LibSQLStore({
     id: "amoaica-mastra-local",

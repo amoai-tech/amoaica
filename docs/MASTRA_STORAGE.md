@@ -26,6 +26,9 @@ that every runner delivery error is fixed.
 
 If POSTGRES_URL/DATABASE_URL are missing, local development uses the ignored
 file .mastra/amoaica-dev.db. This is not an external hosted database.
+A Vercel Preview build without database credentials uses only /tmp scratch
+storage (non-durable); that is NOT a connected testing environment and
+must not be used to validate history or user authentication.
 
 ## Migrations and verification
 

@@ -16,6 +16,11 @@ function check(name, env, expectedCode = 0, expectedText = "PASS") {
 }
 
 check("local fallback has file-backed storage", safeEnv);
+check("Vercel Preview without database uses only /tmp scratch storage", {
+  ...safeEnv,
+  VERCEL: "1",
+  VERCEL_ENV: "preview",
+});
 check("production config selects Postgres", {
   ...safeEnv,
   VERCEL_ENV: "production",
