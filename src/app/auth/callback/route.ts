@@ -9,7 +9,10 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL("/", url.origin));
+      // Only these internal paths are permitted; never accept arbitrary redirects.
+      const next = url.searchParams.get("next");
+      const destination = next === "/reset-password" ? "/reset-password" : "/";
+      return NextResponse.redirect(new URL(destination, url.origin));
     }
   }
   return NextResponse.redirect(new URL("/sign-in?error=auth", url.origin));

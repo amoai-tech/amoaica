@@ -64,4 +64,4 @@ The CopilotKit/Mastra "Proverbs / Weather / Moon" UI is intentionally retained f
 
 ## Schema migrations
 
-The first Supabase schema migration and a safe Preview/RLS checklist are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Do not merge database migrations until the Preview branch has been verified.
+The first Supabase projects migration, Super Admin permissions, and a local-only RLS testing checklist are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). This setup does not require a paid Supabase Preview branch.

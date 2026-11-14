@@ -1,71 +1,92 @@
-# AMO AI Supabase setup
+# AMO AI: Projects database setup and permissions
 
-## Scope
+## What this is
 
-- GitHub: amoai-tech/amoaica
-- Production Supabase project: amoaica
-- Do not use the older amoai website database.
-- Migration 20261114094055_create_projects_foundation.sql matches
-  the migration version already applied on this Supabase main branch.
-- The new app has only the public.projects business table.
-- Every user is an authenticated Postgres role; application Super Admin
-  is a **separate** authorization claim, not a Postgres superuser.
+This guide documents how to reproduce the first app table (public.projects)
+and its Row Level Security (RLS) permissions using the migration stored in GitHub.
 
-## Rebuild a fresh development database
+- App repository: https://github.com/amoai-tech/amoaica
+- Existing Supabase project: amoaica; the table and migration version already exist there.
+- This PR does not create a new hosted database, reset passwords, or change live users.
+- We are NOT enabling Supabase Preview Branching. There is no paid preview branch.
 
-1. Enable a Supabase Preview branch or local Supabase.
-2. Run local migrations: supabase db reset ONLY on local development.
-   Never run db reset against the hosted production database.
-3. Create a NEW Auth test account in the branch. Production accounts
-   are not copied to preview.
-4. To grant the test account Super Admin in Supabase SQL Editor:
+## What is saved in GitHub
 
-```sql
+supabase/migrations/20261114094055_create_projects_foundation.sql:
+
+- Creates projects with id, name, description, status, owner_id, created_at
+- Restricts status to draft, active, or completed
+- Enforces a reference from owner_id to Supabase Auth users
+- Enables RLS so an authenticated user can manage their own rows
+- Provides is_super_admin(), a JWT app_metadata helper that grants application
+  Super Admin access to all projects, NOT PostgreSQL superuser privileges
+- Prevents anonymous users from querying the projects table
+
+The migration matches the version previously applied in Supabase.
+Do not manually reapply it to the same production database just because this
+GitHub PR is merged.
+
+## Rebuild safely, without a Supabase Preview branch
+
+1. On your own development computer, run supabase start to create a LOCAL
+   Supabase instance (requires Supabase CLI and a working local Docker runtime).
+2. Run supabase db reset ONLY against that local instance to replay the
+   version-controlled migrations. Never reset the hosted production database.
+3. Use supabase status to get the local test URL and public key; do not reuse
+   hosted production database credentials for automated tests.
+4. Create a local Auth test user; Auth users are not copied from hosted project.
+5. To give that local test account application Super Admin, update
+   raw_app_meta_data using the Supabase SQL editor or Auth Admin API:
+
+~~~sql
+-- Only for the user you intentionally want to make Super Admin.
+-- Replace with the UUID of a user in the same database.
 UPDATE auth.users
 SET raw_app_meta_data =
   coalesce(raw_app_meta_data, '{}'::jsonb)
   || '{"app_role":"super_admin","permissions":["*"]}'::jsonb
 WHERE id = 'REPLACE_WITH_TEST_USER_UUID'::uuid;
-```
+~~~
 
-5. Sign out and sign back in to refresh the user's JWT.
-6. Test projects SELECT/INSERT/UPDATE/DELETE using a real authenticated session.
-   The is_super_admin() function checks signed JWT app_metadata.
+6. Sign out and back in so the signed JWT contains the new app role.
+7. Verify normal users see only their own projects and Super Admin sees all
+   projects. Test creation, listing, editing, and deletion.
 
-## Security
+## How GitHub CI tests security
 
-- public.projects is protected by RLS.
-- Authenticated owners can manage their own projects.
-- The Super Admin JWT claim allows managing every project.
-- Unauthenticated clients have no privileges on projects.
-- The helper is_super_admin() is SECURITY INVOKER; do NOT replace
-  it with SECURITY DEFINER or grant bypassrls.
-- permissions: ["*"] is app-specific metadata; it does not grant
-  SQL superuser privileges.
+scripts/smoke-auth-guards.mjs checks the UNAUTHENTICATED application:
 
-## Vercel environments
+- Sign-in screen or safe Supabase setup pending screen renders
+- Homepage sends visitors to login when Supabase is configured
+- Anonymous GET/POST/PATCH/DELETE calls to CopilotKit endpoint are rejected
+- Invalid OAuth callback redirects to login
 
-Production Supabase secrets sync to PRODUCTION ONLY.
-Never point Vercel Preview or local development to the main database.
-Supabase + GitHub branching (and Supabase/Vercel integration) must
-provision a branch-specific database and credentials for each PR.
-Supabase may need to redeploy a PR after its DB branch is provisioned.
+CI runs with Supabase intentionally unconfigured. It does not
+prove live login, JWT role enforcement, RLS isolation, or database CRUD.
+Those need separately validated authenticated tests.
 
-NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-are required for the Next.js app. Only add per-environment server-side
-AI keys after validating the deployment boundary.
+## Safe deployment boundaries
 
-Do not merge a migration PR into main before validating schema,
-RLS and Preview isolation.
+- Production Vercel is connected to the hosted Supabase database.
+- Vercel Preview builds are useful for compilation, but must NOT
+  use Production Supabase credentials for data-writing tests.
+- No Supabase Preview branch is required; use local Supabase for migration tests.
+- Keep OPENAI_API_KEY, CPK_INTELLIGENCE_API_KEY, database secrets,
+  and service-role keys server-side. Never expose them with NEXT_PUBLIC_.
+- NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are public
+  browser configuration, not superuser privileges.
 
-## Verification checklist
+## Pre-merge checklist
 
-- [ ] Supabase schema has the same six columns, defaults, checks, and FK.
-- [ ] RLS enabled, no anon SELECT, single owner/admin ALL policy.
-- [ ] is_super_admin() is SECURITY INVOKER and callable by authenticated only.
-- [ ] No production Auth users or data are copied to Preview.
-- [ ] Different users cannot read one another's projects.
-- [ ] Super Admin can access all projects after refreshing JWT.
-- [ ] Vercel Preview environment points to Preview project, NOT main.
-- [ ] No server-side secret or postgres password is exposed to browser.
-- [ ] Real sign-in / logout / refresh / invalid session tested in Preview.
+- [ ] CI build, TypeScript, anonymous auth smoke checks and dependency audit pass.
+- [ ] Migration matches current projects structure and recorded version.
+- [ ] RLS enabled and anon SELECT denied, both in schema and hosted database.
+- [ ] is_super_admin() uses signed app_metadata; it is SECURITY INVOKER.
+- [ ] No production secrets, passwords, or user data committed.
+- [ ] No preview branch or new paid resource created.
+- [ ] Authenticated owner vs non-owner vs Super Admin RLS journeys tested
+      independently, or recorded as follow-up with clear limitation.
+- [ ] PR merges cleanly into latest main.
+
+This PR does not fix password-reset email rate limits: that is a separate
+Supabase Auth provider quota / email configuration issue.

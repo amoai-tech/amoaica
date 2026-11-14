@@ -34,5 +34,16 @@ jobs:
             sleep 1
           done
           AMO_BASE_URL=http://127.0.0.1:3005 npm run test:auth-smoke
+      - name: Password reset route and redirect smoke checks
+        run: |
+          set -euo pipefail
+          PORT=3011 HOSTNAME=127.0.0.1 node .next/standalone/server.js > /tmp/amo-password-smoke.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3011/forgot-password > /dev/null; then break; fi
+            sleep 1
+          done
+          TEST_BASE_URL=http://127.0.0.1:3011 node scripts/smoke-password-reset.mjs
       - name: Block critical production dependency vulnerabilities
         run: npm audit --omit=dev --audit-level=critical
