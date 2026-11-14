@@ -4,6 +4,7 @@ import { weatherTool } from "@/mastra/tools";
 import { LibSQLStore } from "@mastra/libsql";
 import { z } from "zod";
 import { Memory } from "@mastra/memory";
+import { optInPostgresStore } from "@/mastra/optional-pg-storage";
 import { createLanguageModel } from "@/mastra/model";
 
 export const AgentState = z.object({
@@ -42,10 +43,12 @@ export const weatherAgent = new Agent({
   instructions: ({ requestContext }) =>
     withPageContext("You are a helpful assistant.", requestContext),
   memory: new Memory({
-    storage: new LibSQLStore({
-      id: "weather-agent-memory",
-      url: "file::memory:",
-    }),
+    storage:
+      optInPostgresStore() ??
+      new LibSQLStore({
+        id: "weather-agent-memory",
+        url: "file::memory:",
+      }),
     options: {
       workingMemory: {
         enabled: true,

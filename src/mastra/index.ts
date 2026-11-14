@@ -1,5 +1,6 @@
 import { Mastra } from "@mastra/core/mastra";
 import { LibSQLStore } from "@mastra/libsql";
+import { optInPostgresStore } from "./optional-pg-storage";
 import { weatherAgent } from "./agents";
 import type { LogLevel } from "@mastra/core/logger";
 import { ConsoleLogger } from "@mastra/core/logger";
@@ -22,10 +23,12 @@ export const mastra = new Mastra({
   server: {
     host: process.env.MASTRA_HOST ?? "127.0.0.1",
   },
-  storage: new LibSQLStore({
-    id: "mastra-storage",
-    url: ":memory:",
-  }),
+  storage:
+    optInPostgresStore() ??
+    new LibSQLStore({
+      id: "mastra-storage",
+      url: ":memory:",
+    }),
   logger: new ConsoleLogger({
     level: LOG_LEVEL,
   }),
