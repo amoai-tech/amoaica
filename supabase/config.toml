@@ -1,0 +1,9 @@
+# AMO AI local Supabase project.
+# Intentionally minimal: local database migrations only; no paid Preview branch.
+project_id = "amoaica"
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false

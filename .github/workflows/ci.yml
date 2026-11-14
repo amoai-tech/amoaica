@@ -2,7 +2,7 @@ name: Build and Security Baseline
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
 
 permissions:
@@ -23,6 +23,17 @@ jobs:
         run: npx tsc --noEmit
       - name: Production build (Supabase setup pending mode)
         run: npm run build
+      - name: Anonymous auth guards (Supabase not configured in CI)
+        run: |
+          set -euo pipefail
+          PORT=3005 HOSTNAME=127.0.0.1 node .next/standalone/server.js > /tmp/amoaica-standalone.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3005/sign-in > /dev/null; then break; fi
+            sleep 1
+          done
+          AMO_BASE_URL=http://127.0.0.1:3005 npm run test:auth-smoke
       - name: Password reset route and redirect smoke checks
         run: |
           set -euo pipefail

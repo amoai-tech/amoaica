@@ -11,7 +11,8 @@
     "start": "next start",
     "channel": "tsx --tsconfig tsconfig.channel.json channel-host.mts",
     "typecheck:channel": "tsc -p tsconfig.channel.json --noEmit",
-    "dev:infra": "node scripts/copilotkit-dev-infra.mjs"
+    "dev:infra": "node scripts/copilotkit-dev-infra.mjs",
+    "test:auth-smoke": "node scripts/smoke-auth-guards.mjs"
   },
   "dependencies": {
     "@ag-ui/client": "1.0.2",
