@@ -1,0 +1,9 @@
+# AMO AI local Supabase project.
+# Intentionally minimal: do not overwrite hosted Preview Auth redirect settings.
+project_id = "amoaica"
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false

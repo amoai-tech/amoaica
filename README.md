@@ -61,3 +61,7 @@ npm audit --omit=dev --audit-level=critical
 - **Existing Supabase:** preserved; this application must use a newly created Supabase project.
 
 The CopilotKit/Mastra "Proverbs / Weather / Moon" UI is intentionally retained for integration testing, not as the final business dashboard.
+
+## Schema migrations
+
+The first Supabase schema migration and a safe Preview/RLS checklist are in [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Do not merge database migrations until the Preview branch has been verified.
