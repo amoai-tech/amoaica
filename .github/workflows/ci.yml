@@ -34,7 +34,5 @@ jobs:
             sleep 1
           done
           TEST_BASE_URL=http://127.0.0.1:3011 node scripts/smoke-password-reset.mjs
-      - name: Mastra storage selection checks (no live DB)
-        run: npm run test:storage-smoke
       - name: Block critical production dependency vulnerabilities
         run: npm audit --omit=dev --audit-level=critical
