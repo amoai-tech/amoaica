@@ -11,7 +11,10 @@
     "start": "next start",
     "channel": "tsx --tsconfig tsconfig.channel.json channel-host.mts",
     "typecheck:channel": "tsc -p tsconfig.channel.json --noEmit",
-    "dev:infra": "node scripts/copilotkit-dev-infra.mjs"
+    "dev:infra": "node scripts/copilotkit-dev-infra.mjs",
+    "test:mastra-pg-config": "tsx scripts/test-mastra-pg-config.mts",
+    "verify:mastra-pg-tls": "tsx scripts/preflight-mastra-postgres.mts",
+    "init:mastra-pg": "tsx scripts/init-mastra-postgres.mts"
   },
   "dependencies": {
     "@ag-ui/client": "1.0.2",
@@ -27,6 +30,7 @@
     "@mastra/core": "1.41.0",
     "@mastra/libsql": "1.1.0-alpha.2",
     "@mastra/memory": "1.20.2",
+    "@mastra/pg": "1.12.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.119.0",
     "class-variance-authority": "^0.7.1",
