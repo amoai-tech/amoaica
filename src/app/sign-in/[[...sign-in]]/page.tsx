@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignInPage() {
@@ -75,6 +76,7 @@ export default function SignInPage() {
           Continue with Google
         </button>
       )}
+      <p style={{ marginTop: 14 }}><Link href="/forgot-password">Forgot password?</Link></p>
       <p style={{ marginTop: 18 }}>Sign in with an account in the new AMO AI Supabase project.</p>
     </main>
   );
