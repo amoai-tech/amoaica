@@ -34,9 +34,10 @@ The app uses Supabase email/password and Google OAuth via `@supabase/ssr`. The C
 
 After creating the new project:
 1. Configure its publishable key and URL in the ignored local `.env`.
-2. Enable the desired Supabase Auth providers.
+2. Email Auth is enabled by default. Google Auth must be configured separately in the new Supabase project. Only after enabling it, set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`.
+   The existing AMO website's users do **not** automatically exist in this new project.
 3. Configure **Auth URL Configuration** to allow your local `/auth/callback` URL and later your preview deployment.
-4. Verify a real sign-in and refresh/reopen of a saved conversation.
+4. Create or invite a **test account in the new Supabase project** and verify a real sign-in and refresh/reopen of a saved conversation.
 5. Enable signup only after tenant isolation and RLS testing.
 
 Signup remains intentionally disabled in this baseline. Agent and workflow data models are not finalized.

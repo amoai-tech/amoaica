@@ -69,10 +69,12 @@ export default function SignInPage() {
           {submitting ? "Signing in..." : "Sign in"}
         </button>
       </form>
-      <button type="button" disabled={submitting} onClick={signInWithGoogle}
-        style={{ width: "100%", padding: 12, marginTop: 14, border: "1px solid gray", borderRadius: 6 }}>
-        Continue with Google
-      </button>
+      {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true" && (
+        <button type="button" disabled={submitting} onClick={signInWithGoogle}
+          style={{ width: "100%", padding: 12, marginTop: 14, border: "1px solid gray", borderRadius: 6 }}>
+          Continue with Google
+        </button>
+      )}
       <p style={{ marginTop: 18 }}>Sign in with an account in the new AMO AI Supabase project.</p>
     </main>
   );
